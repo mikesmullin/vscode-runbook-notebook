@@ -1,4 +1,14 @@
-const vscode = require('vscode');
+// Lazy load vscode to handle test environment
+let vscode = null;
+try {
+  vscode = require('vscode');
+} catch (error) {
+  // vscode module not available, likely in test environment
+  if (process.env.NODE_ENV === 'test' || require.main?.filename?.includes('test')) {
+    vscode = require('../../tests/vscode-mock');
+  }
+}
+
 const { parseOptionsFromCode } = require('../utils/optionsParser');
 const { processVariableSubstitution, storeCellOutput } = require('../utils/variableProcessor');
 const { CodeExecutor } = require('../services/codeExecutor');
@@ -118,8 +128,14 @@ class CellExecutor {
    */
   handleCodeExecutionSuccess(result, execution, options) {
     const output = result.stdout + (result.stderr ? '\nSTDERR:\n' + result.stderr : '');
+
+    // Check if output contains markdown code blocks (same logic as Copilot cells)
+    const hasCodeBlocks = this.containsMarkdownCodeBlocks(output);
+
+    // Use markdown MIME type if output contains triple backticks, otherwise plain text
+    const mimeType = hasCodeBlocks ? 'text/markdown' : 'text/plain';
     const cellOutput = new vscode.NotebookCellOutput([
-      vscode.NotebookCellOutputItem.text(output, 'text/plain')
+      vscode.NotebookCellOutputItem.text(output, mimeType)
     ]);
     execution.replaceOutput([cellOutput]);
 
@@ -147,6 +163,23 @@ class CellExecutor {
       })
     ])]);
     execution.end(false, Date.now());
+  }
+
+  /**
+   * Check if content contains markdown code blocks (triple-backticks)
+   * Same logic as used in CopilotService for consistency
+   * @param {string} content - Content to check
+   * @returns {boolean} - True if content contains markdown code blocks
+   */
+  containsMarkdownCodeBlocks(content) {
+    if (!content || typeof content !== 'string') {
+      return false;
+    }
+
+    // Look for triple-backticks patterns that indicate markdown code blocks
+    // Uses negative lookbehind and lookahead to ensure exactly 3 backticks
+    const codeBlockPattern = /(?<!`)```(?!`)[\w]*[\s\S]*?```(?!`)/;
+    return codeBlockPattern.test(content);
   }
 
   /**

@@ -348,11 +348,40 @@ class CopilotService {
    */
   updateExecutionOutput(execution, content) {
     if (execution) {
-      const cellOutput = new vscode.NotebookCellOutput([
-        vscode.NotebookCellOutputItem.text(content, 'text/plain')
-      ]);
+      // Check if content contains triple-backticks (markdown code blocks)
+      const hasCodeBlocks = this.containsMarkdownCodeBlocks(content);
+
+      let cellOutput;
+      if (hasCodeBlocks) {
+        // Use markdown mime type for rich output when code blocks are detected
+        cellOutput = new vscode.NotebookCellOutput([
+          vscode.NotebookCellOutputItem.text(content, 'text/markdown')
+        ]);
+      } else {
+        // Use plain text for regular responses
+        cellOutput = new vscode.NotebookCellOutput([
+          vscode.NotebookCellOutputItem.text(content, 'text/plain')
+        ]);
+      }
+
       execution.replaceOutput([cellOutput]);
     }
+  }
+
+  /**
+   * Check if content contains markdown code blocks (triple-backticks)
+   * @param {string} content - Content to check
+   * @returns {boolean} - True if content contains markdown code blocks
+   */
+  containsMarkdownCodeBlocks(content) {
+    if (!content || typeof content !== 'string') {
+      return false;
+    }
+
+    // Look for triple-backticks patterns that indicate markdown code blocks
+    // Uses negative lookbehind and lookahead to ensure exactly 3 backticks
+    const codeBlockPattern = /(?<!`)```(?!`)[\w]*[\s\S]*?```(?!`)/;
+    return codeBlockPattern.test(content);
   }
 
   /**

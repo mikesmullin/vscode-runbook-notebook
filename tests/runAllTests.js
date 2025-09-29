@@ -7,7 +7,8 @@ const path = require('path');
 
 const tests = [
   'optionsParser-simple.test.js',
-  'variableProcessor-simple.test.js'
+  'variableProcessor-simple.test.js',
+  'copilotService-simple.test.js'
 ];
 
 console.log('🧪 Running all modular tests...\n');

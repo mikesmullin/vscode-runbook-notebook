@@ -20,12 +20,14 @@ allowing automation of Troubleshooting Guides (TSGs) with:
   - Code is written to a temporary executable file with appropriate interpreters
   - File is executed and stdout/stderr are captured
   - Output appears in the cell's output area (standard notebook behavior)
+  - **Rich output rendering**: Outputs containing triple backticks (````) are automatically rendered as markdown
   - **Error handling**: Non-zero exit codes display as error outputs with proper styling
   - **Cancellation support**: Long-running executions can be cancelled (works for all supported languages including Bash, Python, and JavaScript)
 - **Copilot Cells**: Send prompts to GitHub Copilot and display responses
   - Copilot response appears in the cell's output area
   - **Cancellation support**: AI requests can be cancelled
   - **Variable Substitution**: Reference outputs from previous cells using `{{variable}}` syntax
+  - **File Inclusion**: Include file content using `{{path/to/file.md}}` syntax (reads from workspace root)
 
 ## Usage
 
@@ -45,12 +47,23 @@ allowing automation of Troubleshooting Guides (TSGs) with:
 4. Open the file with the Runbook Notebook view
 5. Execute cells using the play buttons
 
+### Variable Substitution in Copilot Cells
+
+Two types of variable substitution are supported:
+
+- **Cell Output Variables**: `{{variable_name}}` - References output from cells with `@options {"id": "variable_name"}`
+  - Output is wrapped in code blocks: `````markdown\n{output}\n`````
+- **File Inclusion**: `{{path/to/file.md}}` - Includes content from files relative to workspace root
+  - Content is included as-is without code block wrapping
+  - Useful for including documentation, templates, or reference data
+
 ## Example Runbooks
 
 - [Sample Runbook](example-runbooks/sample-runbook.md)
 - [Copilot Runbook](example-runbooks/copilot-runbook.md)
 - [Database Runbook](example-runbooks/database-runbook.md)
 - [System Analysis Runbook](example-runbooks/system-analysis-runbook.md)
+- [File Inclusion Test](example-runbooks/file-inclusion-test.md) - Demonstrates the new file inclusion feature
 
 ## Variable Substitution
 
