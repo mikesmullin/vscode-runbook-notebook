@@ -6,11 +6,9 @@ allowing automation of Troubleshooting Guides (TSGs) with:
 - 🧑🏻‍💻 various scripting languages (Bash, Node.js, Python, etc.)
 - 💲 shell execution
 
-## Screenshots
+## Demo
 
-![Screenshot 1](docs/screenshot1.png)
-
-![Screenshot 2](docs/screenshot2.png)
+![Screencast](docs/screencast.gif)
 
 ## Features
 
@@ -20,7 +18,13 @@ allowing automation of Troubleshooting Guides (TSGs) with:
   - Code is written to a temporary executable file with appropriate interpreters
   - File is executed and stdout/stderr are captured
   - Output appears in the cell's output area (standard notebook behavior)
-  - **Rich output rendering**: Outputs containing triple backticks (````) are automatically rendered as markdown
+  - **Rich output rendering**: Outputs containing markdown patterns are automatically rendered as markdown
+    - Code blocks (triple backticks `````)
+    - Headers (`# ## ###`)
+    - Bullet points (`- * +`)
+    - Bold text (`**text**`)
+    - Horizontal rules (`---`)
+    - Tables (`| col | col |`)
   - **Error handling**: Non-zero exit codes display as error outputs with proper styling
   - **Cancellation support**: Long-running executions can be cancelled (works for all supported languages including Bash, Python, and JavaScript)
 - **Copilot Cells**: Send prompts to GitHub Copilot and display responses
@@ -59,20 +63,11 @@ Two types of variable substitution are supported:
 
 ## Example Runbooks
 
+- [Graph Runbook](example-runbooks/graph-runbook.md)
 - [Sample Runbook](example-runbooks/sample-runbook.md)
 - [Copilot Runbook](example-runbooks/copilot-runbook.md)
 - [Database Runbook](example-runbooks/database-runbook.md)
 - [System Analysis Runbook](example-runbooks/system-analysis-runbook.md)
-- [File Inclusion Test](example-runbooks/file-inclusion-test.md) - Demonstrates the new file inclusion feature
-
-## Variable Substitution
-
-Store outputs from code cells and reference them in Copilot prompts using `{{variable}}` syntax:
-
-**How it works:**
-- Code cells with `@options {"id": "variable_name"}` store their output
-- Copilot cells can reference stored outputs using `{{variable_name}}` syntax
-- Variables get replaced with the actual output wrapped in triple backticks
 
 ## Installation
 

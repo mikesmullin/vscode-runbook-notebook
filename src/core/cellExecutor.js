@@ -12,6 +12,7 @@ try {
 const { parseOptionsFromCode } = require('../utils/optionsParser');
 const { processVariableSubstitution, storeCellOutput } = require('../utils/variableProcessor');
 const { CodeExecutor } = require('../services/codeExecutor');
+const { containsMarkdownPatterns } = require('../utils/markdownDetector');
 
 /**
  * Service class for executing notebook cells
@@ -129,11 +130,11 @@ class CellExecutor {
   handleCodeExecutionSuccess(result, execution, options) {
     const output = result.stdout + (result.stderr ? '\nSTDERR:\n' + result.stderr : '');
 
-    // Check if output contains markdown code blocks (same logic as Copilot cells)
-    const hasCodeBlocks = this.containsMarkdownCodeBlocks(output);
+    // Check if output contains markdown patterns (same logic as Copilot cells)
+    const hasMarkdown = containsMarkdownPatterns(output);
 
-    // Use markdown MIME type if output contains triple backticks, otherwise plain text
-    const mimeType = hasCodeBlocks ? 'text/markdown' : 'text/plain';
+    // Use markdown MIME type if output contains markdown patterns, otherwise plain text
+    const mimeType = hasMarkdown ? 'text/markdown' : 'text/plain';
     const cellOutput = new vscode.NotebookCellOutput([
       vscode.NotebookCellOutputItem.text(output, mimeType)
     ]);
@@ -145,9 +146,7 @@ class CellExecutor {
     }
 
     execution.end(true, Date.now());
-  }
-
-  /**
+  }  /**
    * Handle code execution error
    * @param {Object} result - Execution result with error
    * @param {vscode.NotebookCellExecution} execution - Execution context
@@ -165,22 +164,7 @@ class CellExecutor {
     execution.end(false, Date.now());
   }
 
-  /**
-   * Check if content contains markdown code blocks (triple-backticks)
-   * Same logic as used in CopilotService for consistency
-   * @param {string} content - Content to check
-   * @returns {boolean} - True if content contains markdown code blocks
-   */
-  containsMarkdownCodeBlocks(content) {
-    if (!content || typeof content !== 'string') {
-      return false;
-    }
 
-    // Look for triple-backticks patterns that indicate markdown code blocks
-    // Uses negative lookbehind and lookahead to ensure exactly 3 backticks
-    const codeBlockPattern = /(?<!`)```(?!`)[\w]*[\s\S]*?```(?!`)/;
-    return codeBlockPattern.test(content);
-  }
 
   /**
    * Handle general execution errors

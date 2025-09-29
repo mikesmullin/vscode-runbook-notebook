@@ -1,0 +1,23 @@
+# Exclude test files and directories
+tests/
+test-data/
+example-runbooks/
+
+# Exclude documentation that's not needed in the package
+docs/
+
+# Exclude VS Code workspace settings
+.vscode/
+
+# Exclude development files
+.git/
+.gitignore
+*.vsix
+
+# Exclude node modules if they exist
+node_modules/
+
+# Exclude other common development files
+*.log
+.DS_Store
+Thumbs.db
