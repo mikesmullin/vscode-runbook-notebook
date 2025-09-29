@@ -2,7 +2,7 @@
   "name": "runbook-notebook",
   "displayName": "Runbook Notebook",
   "description": "A notebook extension for automating Runbooks with terminal execution and Copilot integration",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "publisher": "lunarcavyhvyind",
   "repository": {
     "type": "git",
@@ -78,6 +78,11 @@
         ]
       }
     ],
+    "configurationDefaults": {
+      "workbench.editorAssociations": {
+        "*.md": "default"
+      }
+    },
     "configuration": {
       "title": "Runbook Notebook",
       "properties": {
