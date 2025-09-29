@@ -1,0 +1,97 @@
+{
+  "name": "runbook-notebook",
+  "displayName": "Runbook Notebook",
+  "description": "A notebook extension for automating Runbooks with terminal execution and Copilot integration",
+  "version": "1.0.0",
+  "publisher": "lunarcavyhvyind",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mikesmullin/vscode-runbook-notebook"
+  },
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onLanguage:markdown",
+    "onNotebook:runbookNotebook"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "runbookNotebook.openAsTextEditor",
+        "title": "Open as Text Editor",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "runbookNotebook.openAsNotebook",
+        "title": "Open as Notebook",
+        "icon": "$(notebook)"
+      },
+      {
+        "command": "runbookNotebook.insertCopilotCell",
+        "title": "Copilot",
+        "icon": "$(copilot)"
+      },
+      {
+        "command": "runbookNotebook.insertCodeCell",
+        "title": "Code",
+        "icon": "$(code)"
+      },
+      {
+        "command": "notebook.cell.insertCodeCellBelow",
+        "title": "Code"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "runbookNotebook.openAsTextEditor",
+          "when": "resourceExtname == .md && notebookType == runbookNotebook",
+          "group": "navigation@1"
+        },
+        {
+          "command": "runbookNotebook.openAsNotebook",
+          "when": "resourceExtname == .md && !notebookType",
+          "group": "navigation@1"
+        }
+      ],
+      "notebook/toolbar": [
+        {
+          "command": "runbookNotebook.insertCopilotCell",
+          "when": "notebookType == runbookNotebook",
+          "group": "navigation@1"
+        }
+      ]
+    },
+    "notebooks": [
+      {
+        "type": "runbookNotebook",
+        "displayName": "Runbook",
+        "selector": [
+          {
+            "filenamePattern": "*.md"
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "echo 'No compile needed'",
+    "watch": "echo 'No watch needed'",
+    "pretest": "npm run lint && npm run test:unit",
+    "lint": "echo 'No lint configured'",
+    "test": "npm run test:unit",
+    "test:unit": "node tests/runAllTests.js",
+    "test:options": "node tests/optionsParser-simple.test.js",
+    "test:variables": "node tests/variableProcessor-simple.test.js"
+  },
+  "devDependencies": {},
+  "extensionDependencies": [
+    "GitHub.copilot"
+  ]
+}
