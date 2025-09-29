@@ -3,7 +3,7 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
 const os = require('os');
-const { FILE_EXTENSIONS, SHEBANGS, DEFAULT_SHEBANG, DEFAULT_EXTENSION } = require('../constants');
+const { getFileExtensions, getShebangs, getDefaultShebang, getDefaultExtension, configuration } = require('../constants');
 
 /**
  * Service class for executing code cells
@@ -45,8 +45,10 @@ class CodeExecutor {
    */
   async writeTempExecutableFile(code, languageId) {
     const hash = crypto.randomBytes(8).toString('hex');
-    const extension = FILE_EXTENSIONS[languageId] || DEFAULT_EXTENSION;
-    const shebang = SHEBANGS[languageId] || DEFAULT_SHEBANG;
+    const fileExtensions = getFileExtensions();
+    const shebangs = getShebangs();
+    const extension = fileExtensions[languageId] || getDefaultExtension();
+    const shebang = shebangs[languageId] || getDefaultShebang();
 
     await fs.mkdir(this.tempDir, { recursive: true });
 

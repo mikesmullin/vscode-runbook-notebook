@@ -1,7 +1,7 @@
 const vscode = require('vscode');
 const { spawn } = require('child_process');
 const os = require('os');
-const { MAX_AGENT_TURNS } = require('../constants');
+const { getMaxAgentTurns, configuration } = require('../constants');
 const { containsMarkdownPatterns } = require('../utils/markdownDetector');
 
 /**
@@ -17,6 +17,11 @@ class CopilotService {
    * Check if notebook output scrolling is enabled and prompt user to enable it if not
    */
   async checkAndPromptForScrollableOutput() {
+    // Check if auto-prompting is disabled in settings
+    if (!configuration.getAutoPromptScrollableOutput()) {
+      return;
+    }
+
     // Only prompt once per session
     if (this.hasPromptedForScrolling) {
       return;
@@ -63,10 +68,14 @@ class CopilotService {
       const models = await this.selectCopilotModels(options);
       const model = models[0];
 
-      this.outputChannel.appendLine(`Selected model: ${model.family}, mode: ${options.mode || 'ask'}`);
+      if (configuration.getDebugLogging()) {
+        this.outputChannel.appendLine(`Selected model: ${model.family}, mode: ${options.mode || 'ask'}`);
+      }
 
       const tools = this.getToolsForMode(options.mode);
-      this.outputChannel.appendLine(`Tools provided: ${tools.length}`);
+      if (configuration.getDebugLogging()) {
+        this.outputChannel.appendLine(`Tools provided: ${tools.length}`);
+      }
 
       const response = await this.executeAgentLoop(model, prompt, tools, token, execution);
 
@@ -150,9 +159,10 @@ class CopilotService {
     let fullResponse = '';
     let turnCount = 0;
 
-    while (turnCount < MAX_AGENT_TURNS) {
+    const maxTurns = getMaxAgentTurns();
+    while (turnCount < maxTurns) {
       turnCount++;
-      this.outputChannel.appendLine(`\n--- Turn ${turnCount} ---`);
+      this.outputChannel.appendLine(`\n--- Turn ${turnCount}/${maxTurns} ---`);
 
       const response = await model.sendRequest(messages, { tools }, token);
       const { turnResponse, toolCalls, hasToolCalls } = await this.processModelResponse(
@@ -349,11 +359,10 @@ class CopilotService {
    */
   updateExecutionOutput(execution, content) {
     if (execution) {
-      // Check if content contains markdown patterns
-      const hasMarkdown = containsMarkdownPatterns(content);
-
       let cellOutput;
-      if (hasMarkdown) {
+
+      // Check if markdown rendering is enabled and content contains markdown patterns
+      if (configuration.getEnableMarkdownRendering() && containsMarkdownPatterns(content)) {
         // Use markdown mime type for rich output when markdown patterns are detected
         cellOutput = new vscode.NotebookCellOutput([
           vscode.NotebookCellOutputItem.text(content, 'text/markdown')

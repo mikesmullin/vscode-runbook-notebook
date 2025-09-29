@@ -84,3 +84,4 @@ Two types of variable substitution are supported:
 ## Limitations
 
 - Currently supports JavaScript (Node.js), Python, Bash, and shell scripts with appropriate interpreters
+- Additional languages can be added via configuration settings

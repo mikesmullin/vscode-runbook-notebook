@@ -2,7 +2,7 @@
   "name": "runbook-notebook",
   "displayName": "Runbook Notebook",
   "description": "A notebook extension for automating Runbooks with terminal execution and Copilot integration",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "lunarcavyhvyind",
   "repository": {
     "type": "git",
@@ -77,7 +77,90 @@
           }
         ]
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Runbook Notebook",
+      "properties": {
+        "runbook-notebook.copilot.maxAgentTurns": {
+          "type": "number",
+          "default": 3,
+          "minimum": 1,
+          "maximum": 50,
+          "description": "Maximum number of turns allowed in Copilot agent mode conversations. Higher values allow for more complex multi-step interactions but may increase response time."
+        },
+        "runbook-notebook.languages.commentStyles": {
+          "type": "object",
+          "default": {},
+          "description": "Custom comment styles for different languages. Format: {\"language\": \"comment_prefix\"}. Example: {\"ruby\": \"#\", \"sql\": \"--\"}",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "runbook-notebook.languages.fileExtensions": {
+          "type": "object",
+          "default": {},
+          "description": "Custom file extensions for different languages. Format: {\"language\": \"extension\"}. Example: {\"typescript\": \"ts\", \"ruby\": \"rb\"}",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "runbook-notebook.languages.shebangs": {
+          "type": "object",
+          "default": {},
+          "description": "Custom shebang lines for different languages. Format: {\"language\": \"#!/path/to/interpreter\\n\"}. Example: {\"python\": \"#!/usr/bin/env python3\\n\"}",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "runbook-notebook.languages.defaultShebang": {
+          "type": "string",
+          "default": "#!/bin/bash\n",
+          "description": "Default shebang line to use for unknown languages."
+        },
+        "runbook-notebook.languages.defaultExtension": {
+          "type": "string",
+          "default": "sh",
+          "description": "Default file extension to use for unknown languages."
+        },
+        "runbook-notebook.languages.supported": {
+          "type": "array",
+          "default": [
+            "javascript",
+            "js",
+            "bash",
+            "python",
+            "shell",
+            "copilot"
+          ],
+          "description": "List of supported languages for the notebook controller.",
+          "items": {
+            "type": "string"
+          }
+        },
+        "runbook-notebook.execution.defaultTimeout": {
+          "type": "number",
+          "default": 30,
+          "minimum": 1,
+          "maximum": 3600,
+          "description": "Default timeout in seconds for code cell execution. Can be overridden per cell using @options."
+        },
+        "runbook-notebook.output.enableMarkdownRendering": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable automatic markdown rendering for code cell outputs that contain markdown patterns."
+        },
+        "runbook-notebook.output.autoPromptScrollableOutput": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatically prompt user to enable scrollable notebook output for better Copilot streaming experience."
+        },
+        "runbook-notebook.debug.enabled": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable debug logging to the Runbook Copilot output channel."
+        }
+      }
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",

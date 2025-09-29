@@ -1,85 +1,96 @@
 /**
  * Constants and configuration for the Runbook Notebook Extension
+ * 
+ * This module now provides access to user-configurable settings.
+ * All values can be overridden via VS Code settings under "runbook-notebook.*"
  */
 
-/**
- * Language to comment style mapping for @options parsing
- */
-const COMMENT_STYLES = {
-  'copilot': '//',
-  'bash': '#',
-  'sh': '#',
-  'shell': '#',
-  'javascript': '//',
-  'js': '//',
-  'python': '#',
-  'py': '#',
-  'typescript': '//',
-  'ts': '//',
-  'ruby': '#',
-  'rb': '#',
-  'perl': '#',
-  'r': '#',
-  'yaml': '#',
-  'yml': '#',
-  'powershell': '#',
-  'ps1': '#'
-};
+const configuration = require('./utils/configuration');
 
 /**
- * File extensions for different languages
+ * Get language to comment style mapping for @options parsing
+ * Configurable via: runbook-notebook.languages.commentStyles
  */
-const FILE_EXTENSIONS = {
-  'javascript': 'js',
-  'js': 'js',
-  'python': 'py',
-  'py': 'py',
-  'bash': 'sh',
-  'shell': 'sh',
-  'sh': 'sh'
-};
+function getCommentStyles() {
+  return configuration.getCommentStyles();
+}
 
 /**
- * Shebangs for different languages
+ * Get file extensions for different languages
+ * Configurable via: runbook-notebook.languages.fileExtensions
  */
-const SHEBANGS = {
-  'javascript': '#!/usr/bin/env node\n',
-  'js': '#!/usr/bin/env node\n',
-  'python': '#!/usr/bin/env python3\n',
-  'py': '#!/usr/bin/env python3\n',
-  'bash': '#!/bin/bash\n',
-  'shell': '#!/bin/bash\n',
-  'sh': '#!/bin/bash\n'
-};
+function getFileExtensions() {
+  return configuration.getFileExtensions();
+}
 
 /**
- * Default shebang for unknown languages
+ * Get shebangs for different languages
+ * Configurable via: runbook-notebook.languages.shebangs
  */
-const DEFAULT_SHEBANG = '#!/bin/bash\n';
+function getShebangs() {
+  return configuration.getShebangs();
+}
 
 /**
- * Default file extension for unknown languages
+ * Get default shebang for unknown languages
+ * Configurable via: runbook-notebook.languages.defaultShebang
  */
-const DEFAULT_EXTENSION = 'sh';
+function getDefaultShebang() {
+  return configuration.getDefaultShebang();
+}
 
 /**
- * Maximum turns for Copilot agent mode
+ * Get default file extension for unknown languages
+ * Configurable via: runbook-notebook.languages.defaultExtension
  */
-const MAX_AGENT_TURNS = 3;
+function getDefaultExtension() {
+  return configuration.getDefaultExtension();
+}
 
 /**
- * Supported languages for the notebook controller
+ * Get maximum turns for Copilot agent mode
+ * Configurable via: runbook-notebook.copilot.maxAgentTurns
  */
-const SUPPORTED_LANGUAGES = [
-  'javascript', 'js', 'bash', 'python', 'shell', 'copilot'
-];
+function getMaxAgentTurns() {
+  return configuration.getMaxAgentTurns();
+}
+
+/**
+ * Get supported languages for the notebook controller
+ * Configurable via: runbook-notebook.languages.supported
+ */
+function getSupportedLanguages() {
+  return configuration.getSupportedLanguages();
+}
+
+// Legacy constants for backward compatibility (deprecated)
+const COMMENT_STYLES = getCommentStyles();
+const FILE_EXTENSIONS = getFileExtensions();
+const SHEBANGS = getShebangs();
+const DEFAULT_SHEBANG = getDefaultShebang();
+const DEFAULT_EXTENSION = getDefaultExtension();
+const MAX_AGENT_TURNS = getMaxAgentTurns();
+const SUPPORTED_LANGUAGES = getSupportedLanguages();
 
 module.exports = {
+  // New configurable functions (recommended)
+  getCommentStyles,
+  getFileExtensions,
+  getShebangs,
+  getDefaultShebang,
+  getDefaultExtension,
+  getMaxAgentTurns,
+  getSupportedLanguages,
+
+  // Legacy constants (deprecated - use functions above)
   COMMENT_STYLES,
   FILE_EXTENSIONS,
   SHEBANGS,
   DEFAULT_SHEBANG,
   DEFAULT_EXTENSION,
   MAX_AGENT_TURNS,
-  SUPPORTED_LANGUAGES
+  SUPPORTED_LANGUAGES,
+
+  // Configuration instance for advanced usage
+  configuration
 };

@@ -1,5 +1,5 @@
 const vscode = require('vscode');
-const { COMMENT_STYLES } = require('../constants');
+const { getCommentStyles } = require('../constants');
 
 /**
  * Parse @options from the first line of code based on language-appropriate comment syntax
@@ -13,7 +13,8 @@ function parseOptionsFromCode(code, languageId) {
     return { options: {}, cleanedCode: code };
   }
 
-  const commentStyle = COMMENT_STYLES[languageId] || '//';
+  const commentStyles = getCommentStyles();
+  const commentStyle = commentStyles[languageId] || '//';
   const optionsPrefix = `${commentStyle} @options `;
   const firstLine = lines[0].trim();
 

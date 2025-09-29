@@ -13,7 +13,7 @@ const { NotebookSerializer } = require('./core/notebookSerializer');
 const { CellExecutor } = require('./core/cellExecutor');
 const { CommandHandler } = require('./core/commandHandler');
 const { CopilotService } = require('./services/copilotService');
-const { SUPPORTED_LANGUAGES } = require('./constants');
+const { getSupportedLanguages, configuration } = require('./constants');
 
 /**
  * Main extension class that coordinates all functionality
@@ -52,6 +52,9 @@ class RunbookExtension {
     // Add services to subscriptions for cleanup
     context.subscriptions.push(this.copilotService);
 
+    // Watch for configuration changes
+    this.setupConfigurationWatcher(context);
+
     console.log('Runbook Notebook Extension activated');
   }
 
@@ -66,7 +69,7 @@ class RunbookExtension {
       'Runbook Controller'
     );
 
-    this.controller.supportedLanguages = SUPPORTED_LANGUAGES;
+    this.controller.supportedLanguages = getSupportedLanguages();
     this.controller.supportsExecutionOrder = true;
     this.controller.executeHandler = this.createExecuteHandler();
 
@@ -89,6 +92,29 @@ class RunbookExtension {
         }
       }
     };
+  }
+
+  /**
+   * Setup configuration change watcher
+   * @param {vscode.ExtensionContext} context - Extension context
+   */
+  setupConfigurationWatcher(context) {
+    const configWatcher = configuration.onConfigurationChanged((event) => {
+      // Update supported languages if they changed
+      if (event.affectsConfiguration('runbook-notebook.languages.supported')) {
+        if (this.controller) {
+          this.controller.supportedLanguages = getSupportedLanguages();
+          console.log('Updated supported languages:', getSupportedLanguages());
+        }
+      }
+
+      // Log other configuration changes for debugging
+      if (configuration.getDebugLogging()) {
+        console.log('Runbook Notebook configuration changed:', event);
+      }
+    });
+
+    context.subscriptions.push(configWatcher);
   }
 
   /**
