@@ -1,4 +1,13 @@
-const vscode = require('vscode');
+// Lazy load vscode to handle test environment
+let vscode = null;
+try {
+  vscode = require('vscode');
+} catch (error) {
+  // vscode module not available, likely in test environment
+  if (process.env.NODE_ENV === 'test' || require.main?.filename?.includes('test')) {
+    vscode = require('../../tests/vscode-mock');
+  }
+}
 
 /**
  * Configuration manager for the Runbook Notebook Extension

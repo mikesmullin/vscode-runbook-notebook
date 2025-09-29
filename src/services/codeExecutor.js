@@ -3,6 +3,18 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawn } = require('child_process');
 const os = require('os');
+
+// Lazy load vscode to handle test environment
+let vscode = null;
+try {
+  vscode = require('vscode');
+} catch (error) {
+  // vscode module not available, likely in test environment
+  if (process.env.NODE_ENV === 'test' || require.main?.filename?.includes('test')) {
+    vscode = require('../../tests/vscode-mock');
+  }
+}
+
 const { getFileExtensions, getShebangs, getDefaultShebang, getDefaultExtension, configuration } = require('../constants');
 
 /**
@@ -10,7 +22,20 @@ const { getFileExtensions, getShebangs, getDefaultShebang, getDefaultExtension, 
  */
 class CodeExecutor {
   constructor() {
-    this.tempDir = path.join(os.tmpdir(), 'runbook-exec');
+    // Use workspace root instead of system temp directory
+    this.tempDir = this.getWorkspaceRoot();
+  }
+
+  /**
+   * Get the workspace root directory
+   * @returns {string} - Path to workspace root
+   */
+  getWorkspaceRoot() {
+    if (vscode && vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+      return vscode.workspace.workspaceFolders[0].uri.fsPath;
+    }
+    // Fallback to current working directory if no workspace
+    return process.cwd();
   }
 
   /**
@@ -73,8 +98,8 @@ class CodeExecutor {
    */
   async executeFile(filePath, languageId, cancellationToken, options = {}) {
     return new Promise((resolve, reject) => {
-      const { command, args } = this.getExecutionCommand(filePath, languageId);
-      const child = spawn(command, args);
+      const { command, args, spawnOptions } = this.getExecutionCommand(filePath, languageId);
+      const child = spawn(command, args, spawnOptions);
 
       let stdout = '';
       let stderr = '';
@@ -149,11 +174,16 @@ class CodeExecutor {
    * Get the execution command and arguments for a given file and language
    * @param {string} filePath - Path to the file to execute
    * @param {string} languageId - The language identifier
-   * @returns {Object} - Object with command and args
+   * @returns {Object} - Object with command, args, and spawnOptions
    */
   getExecutionCommand(filePath, languageId) {
     let command;
     let args = [];
+    const spawnOptions = {
+      cwd: this.tempDir, // Run from workspace root
+      env: { ...process.env }, // Forward VS Code's environment variables
+      shell: false
+    };
 
     if (languageId === 'javascript' || languageId === 'js') {
       command = 'node';
@@ -162,15 +192,85 @@ class CodeExecutor {
       command = 'python3';
       args = [filePath];
     } else if (languageId === 'bash' || languageId === 'shell' || languageId === 'sh') {
-      const wslPath = filePath.replace(/\\/g, '/').replace(/^([A-Z]):/i, (match, drive) => `/mnt/${drive.toLowerCase()}`);
-      command = 'bash';
-      args = [wslPath];
+      // Use default terminal shell (login shell) instead of hardcoded bash
+      const shell = this.getDefaultShell();
+
+      if (shell === 'wsl.exe') {
+        // For WSL, convert Windows path to WSL path
+        const wslPath = filePath.replace(/\\/g, '/').replace(/^([A-Z]):/i, (match, drive) => `/mnt/${drive.toLowerCase()}`);
+        command = 'wsl.exe';
+        args = ['-e', 'bash', '-l', '-c', `exec "${wslPath}"`];
+      } else {
+        command = shell;
+        args = ['-l', '-c', `exec "${filePath}"`]; // -l for login shell, -c to execute command
+      }
     } else {
       command = filePath;
       args = [];
     }
 
-    return { command, args };
+    return { command, args, spawnOptions };
+  }
+
+  /**
+   * Get the default shell configured in VS Code
+   * @returns {string} - Default shell command
+   */
+  getDefaultShell() {
+    // Try to get the default terminal profile from VS Code configuration
+    if (vscode && vscode.workspace) {
+      const config = vscode.workspace.getConfiguration('terminal.integrated');
+
+      // Check for platform-specific default profile
+      const platform = os.platform();
+      if (platform === 'win32') {
+        const defaultProfile = config.get('defaultProfile.windows');
+        if (defaultProfile === 'WSL') {
+          return 'wsl.exe';
+        }
+        if (defaultProfile === 'PowerShell') {
+          return 'powershell.exe';
+        }
+        if (defaultProfile === 'Command Prompt') {
+          return 'cmd.exe';
+        }
+        // Check if WSL is available as default
+        const profiles = config.get('profiles.windows', {});
+        if (profiles['WSL'] || profiles['Ubuntu'] || profiles['Ubuntu (WSL)']) {
+          return 'wsl.exe';
+        }
+      } else if (platform === 'darwin') {
+        const defaultProfile = config.get('defaultProfile.osx');
+        if (defaultProfile === 'zsh') {
+          return '/bin/zsh';
+        }
+        if (defaultProfile === 'bash') {
+          return '/bin/bash';
+        }
+      } else if (platform === 'linux') {
+        const defaultProfile = config.get('defaultProfile.linux');
+        if (defaultProfile === 'zsh') {
+          return '/bin/zsh';
+        }
+        if (defaultProfile === 'bash') {
+          return '/bin/bash';
+        }
+      }
+    }
+
+    // Fallback based on platform
+    const platform = os.platform();
+    if (platform === 'win32') {
+      // Check if we're in WSL context or if WSL is preferred
+      if (process.env.WSL_DISTRO_NAME || process.env.WSLENV) {
+        return '/bin/bash'; // We're inside WSL
+      }
+      return 'wsl.exe'; // Prefer WSL on Windows
+    } else if (platform === 'darwin') {
+      return '/bin/zsh'; // Default shell on macOS
+    } else {
+      return '/bin/bash'; // Default for Linux
+    }
   }
 }
 

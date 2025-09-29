@@ -42,8 +42,8 @@ function containsMarkdownPatterns(content) {
     return true;
   }
 
-  // Pattern 6: Markdown table dividers (|-|-|)
-  const tableDividerPattern = /^\s*\|[\s]*[-:]+[\s]*\|/m;
+  // Pattern 6: Markdown table dividers - supports both full format (|--|--|) and minimal format (--|--|--) 
+  const tableDividerPattern = /^\s*((\|[\s]*[-:]+[\s]*)+\||[\s]*[-:]+[\s]*(\|[\s]*[-:]+[\s]*)+)/m;
   if (tableDividerPattern.test(content)) {
     return true;
   }
