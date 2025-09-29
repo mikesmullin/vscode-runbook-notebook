@@ -2,6 +2,7 @@ const vscode = require('vscode');
 const { spawn } = require('child_process');
 const os = require('os');
 const { MAX_AGENT_TURNS } = require('../constants');
+const { containsMarkdownPatterns } = require('../utils/markdownDetector');
 
 /**
  * Service class for interacting with GitHub Copilot
@@ -348,12 +349,12 @@ class CopilotService {
    */
   updateExecutionOutput(execution, content) {
     if (execution) {
-      // Check if content contains triple-backticks (markdown code blocks)
-      const hasCodeBlocks = this.containsMarkdownCodeBlocks(content);
+      // Check if content contains markdown patterns
+      const hasMarkdown = containsMarkdownPatterns(content);
 
       let cellOutput;
-      if (hasCodeBlocks) {
-        // Use markdown mime type for rich output when code blocks are detected
+      if (hasMarkdown) {
+        // Use markdown mime type for rich output when markdown patterns are detected
         cellOutput = new vscode.NotebookCellOutput([
           vscode.NotebookCellOutputItem.text(content, 'text/markdown')
         ]);
@@ -368,21 +369,7 @@ class CopilotService {
     }
   }
 
-  /**
-   * Check if content contains markdown code blocks (triple-backticks)
-   * @param {string} content - Content to check
-   * @returns {boolean} - True if content contains markdown code blocks
-   */
-  containsMarkdownCodeBlocks(content) {
-    if (!content || typeof content !== 'string') {
-      return false;
-    }
 
-    // Look for triple-backticks patterns that indicate markdown code blocks
-    // Uses negative lookbehind and lookahead to ensure exactly 3 backticks
-    const codeBlockPattern = /(?<!`)```(?!`)[\w]*[\s\S]*?```(?!`)/;
-    return codeBlockPattern.test(content);
-  }
 
   /**
    * Execute a shell command and return the output

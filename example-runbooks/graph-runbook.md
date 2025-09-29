@@ -89,7 +89,42 @@ The chart should:
 - Include the raw mermaid code in markdown code blocks
 ```
 
-## Step 5: System Health Summary
+## Step 5: Generate Performance Summary Table
+
+Create a formatted markdown table summarizing system performance metrics:
+
+```copilot
+// @options {"mode": "ask"}
+Create a comprehensive markdown table that summarizes system performance metrics using this pretend data:
+
+**Server Information:**
+- WebServer01: CPU 78%, Memory 4.2GB, Disk 45%, Network 234MB/s
+- DatabaseSrv: CPU 92%, Memory 8.1GB, Disk 67%, Network 156MB/s  
+- CacheCluster: CPU 34%, Memory 2.8GB, Disk 23%, Network 89MB/s
+- QueueWorker: CPU 56%, Memory 1.9GB, Disk 34%, Network 67MB/s
+- AnalyticsSrv: CPU 89%, Memory 6.4GB, Disk 78%, Network 123MB/s
+
+**Service Status:**
+- WebServer01: Healthy, Last restart: 2 days ago
+- DatabaseSrv: Warning (High CPU), Last restart: 7 days ago
+- CacheCluster: Healthy, Last restart: 1 day ago
+- QueueWorker: Healthy, Last restart: 3 days ago
+- AnalyticsSrv: Critical (High CPU & Disk), Last restart: 12 days ago
+
+Create a well-formatted markdown table with these columns:
+- Service Name
+- CPU Usage (%)
+- Memory (GB)
+- Disk Usage (%)
+- Network (MB/s)
+- Status
+- Last Restart
+- Action Required
+
+Use appropriate status indicators (✅ Healthy, ⚠️ Warning, 🚨 Critical) and suggest actions for problematic services.
+```
+
+## Step 6: System Health Summary
 
 Analyze the generated data and provide insights:
 
