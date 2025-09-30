@@ -1,7 +1,7 @@
 const vscode = require('vscode');
 const { spawn } = require('child_process');
 const os = require('os');
-const { getMaxAgentTurns, configuration } = require('../constants');
+const { getMaxAgentTurns, getDefaultModel, configuration } = require('../constants');
 const { containsMarkdownPatterns } = require('../utils/markdownDetector');
 
 /**
@@ -106,14 +106,17 @@ class CopilotService {
 
     this.outputChannel.appendLine(`Available models: ${models.map(m => m.family).join(', ')}`);
 
-    // Filter by model if specified
-    if (options.model) {
-      const filtered = models.filter(m => m.family.includes(options.model));
-      this.outputChannel.appendLine(`Filtered for '${options.model}': ${filtered.map(m => m.family).join(', ')}`);
+    // Determine which model to use (priority: options.model > default config > first available)
+    let targetModel = options.model || getDefaultModel();
+
+    // Filter by target model if specified
+    if (targetModel) {
+      const filtered = models.filter(m => m.family.includes(targetModel));
+      this.outputChannel.appendLine(`Filtered for '${targetModel}': ${filtered.map(m => m.family).join(', ')}`);
       if (filtered.length > 0) {
         models = filtered;
       } else {
-        this.outputChannel.appendLine(`Specified model '${options.model}' not found. Using default model.`);
+        this.outputChannel.appendLine(`Specified model '${targetModel}' not found. Using first available model.`);
       }
     }
 

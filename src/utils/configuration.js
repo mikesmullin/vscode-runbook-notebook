@@ -35,6 +35,14 @@ class Configuration {
   }
 
   /**
+   * Get the default AI model for Copilot queries
+   * @returns {string}
+   */
+  getDefaultModel() {
+    return this.getConfig().get('copilot.defaultModel', 'claude-sonnet-4');
+  }
+
+  /**
    * Get comment styles for different languages
    * @returns {Object}
    */

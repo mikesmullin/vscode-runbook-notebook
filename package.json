@@ -2,7 +2,7 @@
   "name": "runbook-notebook",
   "displayName": "Runbook Notebook",
   "description": "A notebook extension for automating Runbooks with terminal execution and Copilot integration",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "publisher": "lunarcavyhvyind",
   "repository": {
     "type": "git",
@@ -87,6 +87,11 @@
           "minimum": 1,
           "maximum": 50,
           "description": "Maximum number of turns allowed in Copilot agent mode conversations. Higher values allow for more complex multi-step interactions but may increase response time."
+        },
+        "runbook-notebook.copilot.defaultModel": {
+          "type": "string",
+          "default": "claude-sonnet-4",
+          "description": "Default AI model to use for Copilot queries. This can be overridden per cell using @options {\"model\": \"model-name\"}. Available models depend on your GitHub Copilot subscription."
         },
         "runbook-notebook.languages.commentStyles": {
           "type": "object",

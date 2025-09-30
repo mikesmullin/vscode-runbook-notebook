@@ -56,6 +56,14 @@ function getMaxAgentTurns() {
 }
 
 /**
+ * Get default AI model for Copilot queries
+ * Configurable via: runbook-notebook.copilot.defaultModel
+ */
+function getDefaultModel() {
+  return configuration.getDefaultModel();
+}
+
+/**
  * Get supported languages for the notebook controller
  * Configurable via: runbook-notebook.languages.supported
  */
@@ -80,6 +88,7 @@ module.exports = {
   getDefaultShebang,
   getDefaultExtension,
   getMaxAgentTurns,
+  getDefaultModel,
   getSupportedLanguages,
 
   // Legacy constants (deprecated - use functions above)

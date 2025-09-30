@@ -108,6 +108,13 @@ class RunbookExtension {
         }
       }
 
+      // Log model configuration changes
+      if (event.affectsConfiguration('runbook-notebook.copilot.defaultModel')) {
+        if (configuration.getDebugLogging()) {
+          console.log('Default AI model changed to:', configuration.getDefaultModel());
+        }
+      }
+
       // Log other configuration changes for debugging
       if (configuration.getDebugLogging()) {
         console.log('Runbook Notebook configuration changed:', event);
