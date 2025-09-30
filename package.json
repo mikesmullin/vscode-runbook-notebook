@@ -73,16 +73,11 @@
         "displayName": "Runbook",
         "selector": [
           {
-            "filenamePattern": "*.md"
+            "filenamePattern": "*.runbook.md"
           }
         ]
       }
     ],
-    "configurationDefaults": {
-      "workbench.editorAssociations": {
-        "*.md": "default"
-      }
-    },
     "configuration": {
       "title": "Runbook Notebook",
       "properties": {
