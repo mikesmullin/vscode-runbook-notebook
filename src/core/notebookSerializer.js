@@ -112,7 +112,13 @@ class NotebookSerializer {
 
     // Include cell outputs if they exist
     if (cell.outputs && cell.outputs.length > 0) {
-      content += '\n**Output:**\n```\n';
+      // Check if any output is markdown to determine the output block type
+      const hasMarkdownOutput = cell.outputs.some(output =>
+        output.items.some(item => item.mime === 'text/markdown')
+      );
+      const outputLang = hasMarkdownOutput ? 'markdown' : '';
+
+      content += '\n**Output:**\n```' + outputLang + '\n';
       for (const output of cell.outputs) {
         content += this.serializeOutput(output);
       }
@@ -134,12 +140,20 @@ class NotebookSerializer {
       if (item.mime === 'text/plain' || item.mime === 'text/markdown') {
         // Decode the output text and add it
         const outputText = new TextDecoder().decode(item.data);
-        // Add trailing spaces to each line for proper markdown line breaks
-        const linesWithSpaces = outputText
-          .split('\n')
-          .map(line => line + '  ')
-          .join('\n');
-        content += linesWithSpaces;
+        // Split into lines and add trailing spaces for proper markdown line breaks
+        const lines = outputText.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i];
+          // Add trailing spaces to all lines except the last one (which is typically empty or the final line)
+          if (i < lines.length - 1) {
+            content += line + '  \n';
+          } else {
+            // Last line: only add if it's not empty
+            if (line) {
+              content += line + '  \n';
+            }
+          }
+        }
       } else if (item.mime === 'application/vnd.code.notebook.error') {
         // Handle error outputs
         const errorData = JSON.parse(new TextDecoder().decode(item.data));

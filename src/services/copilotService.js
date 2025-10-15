@@ -366,9 +366,19 @@ class CopilotService {
 
       // Check if markdown rendering is enabled and content contains markdown patterns
       if (configuration.getEnableMarkdownRendering() && containsMarkdownPatterns(content)) {
+        // For markdown output, add trailing spaces to each line for proper line breaks
+        const lines = content.split('\n');
+        const displayContent = lines.map((line, index) => {
+          // Add trailing spaces to all lines except the very last one
+          if (index < lines.length - 1) {
+            return line + '  ';
+          }
+          return line;
+        }).join('\n');
+
         // Use markdown mime type for rich output when markdown patterns are detected
         cellOutput = new vscode.NotebookCellOutput([
-          vscode.NotebookCellOutputItem.text(content, 'text/markdown')
+          vscode.NotebookCellOutputItem.text(displayContent, 'text/markdown')
         ]);
       } else {
         // Use plain text for regular responses

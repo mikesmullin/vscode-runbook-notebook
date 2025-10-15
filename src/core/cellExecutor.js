@@ -153,8 +153,22 @@ class CellExecutor {
 
     // Use markdown MIME type if output contains markdown patterns, otherwise plain text
     const mimeType = hasMarkdown ? 'text/markdown' : 'text/plain';
+
+    // For markdown output, add trailing spaces to each line for proper line breaks
+    let displayOutput = output;
+    if (hasMarkdown) {
+      const lines = output.split('\n');
+      displayOutput = lines.map((line, index) => {
+        // Add trailing spaces to all lines except the very last one
+        if (index < lines.length - 1) {
+          return line + '  ';
+        }
+        return line;
+      }).join('\n');
+    }
+
     const cellOutput = new vscode.NotebookCellOutput([
-      vscode.NotebookCellOutputItem.text(output, mimeType)
+      vscode.NotebookCellOutputItem.text(displayOutput, mimeType)
     ]);
     execution.replaceOutput([cellOutput]);
 
