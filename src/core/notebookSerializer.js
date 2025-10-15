@@ -23,6 +23,24 @@ class NotebookSerializer {
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
 
+      // Check for output block start
+      if (line === '**Output:**' && i + 1 < lines.length && lines[i + 1].startsWith('```')) {
+        // Start of output section - skip it
+        inOutputBlock = true;
+        i++; // Skip the next ``` line (could be ``` or ```markdown)
+        continue; // Skip to next iteration
+      }
+
+      // If we're in an output block, check for closing backticks
+      if (inOutputBlock) {
+        if (line.startsWith('```')) {
+          // End of output block
+          inOutputBlock = false;
+        }
+        // Skip this line (it's part of the output block)
+        continue;
+      }
+
       if (line.startsWith('```')) {
         if (inCodeBlock) {
           // End of code block - create a code cell
@@ -34,9 +52,6 @@ class NotebookSerializer {
           currentCell = null;
           inCodeBlock = false;
           codeContent = '';
-        } else if (inOutputBlock) {
-          // End of output block - skip it
-          inOutputBlock = false;
         } else {
           // Start of code block
           if (currentCell) {
@@ -52,14 +67,10 @@ class NotebookSerializer {
           inCodeBlock = true;
           codeContent = '';
         }
-      } else if (line === '**Output:**' && i + 1 < lines.length && lines[i + 1] === '```') {
-        // Start of output section - skip it
-        inOutputBlock = true;
-        i++; // Skip the next ``` line
-      } else if (inCodeBlock && !inOutputBlock) {
+      } else if (inCodeBlock) {
         // Inside code block - accumulate the code content
         codeContent += line + '\n';
-      } else if (!inOutputBlock) {
+      } else {
         // Regular markdown content - create or continue a markdown cell
         if (!currentCell || currentCell.kind !== vscode.NotebookCellKind.Markup) {
           if (currentCell) {
