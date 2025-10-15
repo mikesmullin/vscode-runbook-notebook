@@ -44,13 +44,14 @@ class CodeExecutor {
    * @param {string} languageId - The language identifier
    * @param {vscode.CancellationToken} cancellationToken - Cancellation token
    * @param {Object} options - Execution options
+   * @param {vscode.NotebookCellExecution} execution - Execution context for streaming updates
    * @returns {Promise<Object>} - Execution result
    */
-  async executeCode(code, languageId, cancellationToken, options = {}) {
+  async executeCode(code, languageId, cancellationToken, options = {}, execution = null) {
     const tempFilePath = await this.writeTempExecutableFile(code, languageId);
 
     try {
-      const result = await this.executeFile(tempFilePath, languageId, cancellationToken, options);
+      const result = await this.executeFile(tempFilePath, languageId, cancellationToken, options, execution);
       return result;
     } finally {
       // Clean up temp file
@@ -94,9 +95,10 @@ class CodeExecutor {
    * @param {string} languageId - The language identifier
    * @param {vscode.CancellationToken} cancellationToken - Cancellation token
    * @param {Object} options - Execution options
+   * @param {vscode.NotebookCellExecution} execution - Execution context for streaming updates
    * @returns {Promise<Object>} - Execution result with stdout, stderr, and exitCode
    */
-  async executeFile(filePath, languageId, cancellationToken, options = {}) {
+  async executeFile(filePath, languageId, cancellationToken, options = {}, execution = null) {
     return new Promise((resolve, reject) => {
       const { command, args, spawnOptions } = this.getExecutionCommand(filePath, languageId);
       const child = spawn(command, args, spawnOptions);
@@ -104,6 +106,52 @@ class CodeExecutor {
       let stdout = '';
       let stderr = '';
       let timeoutId = null;
+      let updateDebounceTimer = null;
+
+      // Import markdown detector if needed for streaming
+      const { containsMarkdownPatterns } = execution ? require('../utils/markdownDetector') : { containsMarkdownPatterns: null };
+
+      // Helper function to update cell output during streaming
+      const updateStreamingOutput = (immediate = false) => {
+        if (!execution) return;
+
+        // Clear any pending debounced update
+        if (updateDebounceTimer) {
+          clearTimeout(updateDebounceTimer);
+          updateDebounceTimer = null;
+        }
+
+        const doUpdate = () => {
+          const output = stdout + (stderr ? '\nSTDERR:\n' + stderr : '');
+          const hasMarkdown = containsMarkdownPatterns && containsMarkdownPatterns(output);
+          const mimeType = hasMarkdown ? 'text/markdown' : 'text/plain';
+
+          // For markdown output, add trailing spaces to each line for proper line breaks
+          let displayOutput = output;
+          if (hasMarkdown) {
+            const lines = output.split('\n');
+            displayOutput = lines.map((line, index) => {
+              // Add trailing spaces to all lines except the very last one
+              if (index < lines.length - 1) {
+                return line + '  ';
+              }
+              return line;
+            }).join('\n');
+          }
+
+          const cellOutput = new vscode.NotebookCellOutput([
+            vscode.NotebookCellOutputItem.text(displayOutput, mimeType)
+          ]);
+          execution.replaceOutput([cellOutput]);
+        };
+
+        if (immediate) {
+          doUpdate();
+        } else {
+          // Debounce updates to avoid too many UI refreshes (update every 100ms max)
+          updateDebounceTimer = setTimeout(doUpdate, 100);
+        }
+      };
 
       // Helper function to kill the process
       const killProcess = () => {
@@ -125,6 +173,9 @@ class CodeExecutor {
       // Handle timeout
       if (options.timeout && typeof options.timeout === 'number' && options.timeout > 0) {
         timeoutId = setTimeout(() => {
+          if (updateDebounceTimer) {
+            clearTimeout(updateDebounceTimer);
+          }
           killProcess();
           resolve({
             stdout: stdout + '\n[Process timed out after ' + options.timeout + ' seconds]',
@@ -148,22 +199,32 @@ class CodeExecutor {
 
       child.stdout.on('data', (data) => {
         stdout += data.toString();
+        updateStreamingOutput(); // Stream output to notebook
       });
 
       child.stderr.on('data', (data) => {
         stderr += data.toString();
+        updateStreamingOutput(); // Stream stderr to notebook
       });
 
       child.on('close', (code) => {
         if (timeoutId) {
           clearTimeout(timeoutId);
         }
+        if (updateDebounceTimer) {
+          clearTimeout(updateDebounceTimer);
+        }
+        // Final update with immediate flag to ensure last output is shown
+        updateStreamingOutput(true);
         resolve({ stdout, stderr, exitCode: code });
       });
 
       child.on('error', (error) => {
         if (timeoutId) {
           clearTimeout(timeoutId);
+        }
+        if (updateDebounceTimer) {
+          clearTimeout(updateDebounceTimer);
         }
         reject(error);
       });

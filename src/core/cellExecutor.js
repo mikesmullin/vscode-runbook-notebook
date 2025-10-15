@@ -80,7 +80,7 @@ class CellExecutor {
     }
 
     // Execute the code
-    const result = await this.codeExecutor.executeCode(processedCode, languageId, execution.token, options);
+    const result = await this.codeExecutor.executeCode(processedCode, languageId, execution.token, options, execution);
 
     // Handle execution result
     if (result.exitCode !== 0) {
