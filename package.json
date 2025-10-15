@@ -130,9 +130,9 @@
         "runbook-notebook.languages.supported": {
           "type": "array",
           "default": [
+            "bash",
             "javascript",
             "js",
-            "bash",
             "python",
             "shell",
             "copilot"

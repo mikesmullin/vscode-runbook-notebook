@@ -131,10 +131,15 @@ class NotebookSerializer {
   serializeOutput(output) {
     let content = '';
     for (const item of output.items) {
-      if (item.mime === 'text/plain') {
+      if (item.mime === 'text/plain' || item.mime === 'text/markdown') {
         // Decode the output text and add it
         const outputText = new TextDecoder().decode(item.data);
-        content += outputText;
+        // Add trailing spaces to each line for proper markdown line breaks
+        const linesWithSpaces = outputText
+          .split('\n')
+          .map(line => line + '  ')
+          .join('\n');
+        content += linesWithSpaces;
       } else if (item.mime === 'application/vnd.code.notebook.error') {
         // Handle error outputs
         const errorData = JSON.parse(new TextDecoder().decode(item.data));

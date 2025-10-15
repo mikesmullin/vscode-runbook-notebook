@@ -39,7 +39,7 @@ class CellExecutor {
       if (languageId === 'copilot') {
         await this.executeCopilotCell(cell, execution, notebook);
       } else {
-        await this.executeCodeCell(cell, execution);
+        await this.executeCodeCell(cell, execution, notebook);
       }
     } catch (error) {
       this.handleExecutionError(error, execution);
@@ -63,8 +63,8 @@ class CellExecutor {
     const languageId = cell.document.languageId;
     const { options, cleanedCode } = parseOptionsFromCode(code, languageId);
 
-    // Process variable substitution
-    const { processedCode, errors } = processVariableSubstitution(cleanedCode, notebook);
+    // Process variable substitution with code block wrapping for copilot
+    const { processedCode, errors } = processVariableSubstitution(cleanedCode, notebook, true);
 
     // If there are variable substitution errors, show them and stop execution
     if (errors.length > 0) {
@@ -98,8 +98,9 @@ class CellExecutor {
    * Execute a code cell
    * @param {vscode.NotebookCell} cell - The cell to execute
    * @param {vscode.NotebookCellExecution} execution - The execution context
+   * @param {vscode.NotebookDocument} notebook - The notebook document
    */
-  async executeCodeCell(cell, execution) {
+  async executeCodeCell(cell, execution, notebook) {
     // Check if execution was cancelled
     if (execution.token.isCancellationRequested) {
       execution.end(false, Date.now());
@@ -110,8 +111,25 @@ class CellExecutor {
     const languageId = cell.document?.languageId || cell.languageId || 'unknown';
     const { options, cleanedCode } = parseOptionsFromCode(code, languageId);
 
+    // Process variable substitution without code block wrapping for code cells
+    const { processedCode, errors } = processVariableSubstitution(cleanedCode, notebook, false);
+
+    // If there are variable substitution errors, show them and stop execution
+    if (errors.length > 0) {
+      const errorMessage = errors.join('\n');
+      execution.replaceOutput([new vscode.NotebookCellOutput([
+        vscode.NotebookCellOutputItem.error({
+          name: 'VariableSubstitutionError',
+          message: errorMessage,
+          stack: errorMessage
+        })
+      ])]);
+      execution.end(false, Date.now());
+      return;
+    }
+
     // Execute the code
-    const result = await this.codeExecutor.executeCode(cleanedCode, languageId, execution.token, options);
+    const result = await this.codeExecutor.executeCode(processedCode, languageId, execution.token, options);
 
     // Handle execution result
     if (result.exitCode !== 0) {

@@ -56,14 +56,15 @@ function readFileContent(filePath, notebook) {
 }
 
 /**
- * Process variable substitution in copilot code
+ * Process variable substitution in code
  * Replaces {{variable}} with outputs from cells that have matching @options.id
  * For {{*.md}} patterns, reads file content from workspace relative path
- * @param {string} code - The copilot code content
+ * @param {string} code - The code content
  * @param {vscode.NotebookDocument} notebook - The notebook document to search for cell IDs
+ * @param {boolean} wrapInCodeBlocks - Whether to wrap variable outputs in code blocks (for copilot cells)
  * @returns {Object} - Object containing processed code and any errors
  */
-function processVariableSubstitution(code, notebook) {
+function processVariableSubstitution(code, notebook, wrapInCodeBlocks = true) {
   const variablePattern = /\{\{([^}]+)\}\}/g;
   const errors = [];
   let processedCode = code;
@@ -85,7 +86,8 @@ function processVariableSubstitution(code, notebook) {
       // Look for output in stored cell outputs
       if (cellOutputs.has(variableName)) {
         const output = cellOutputs.get(variableName);
-        const replacement = `\`\`\`\n${output}\n\`\`\``;
+        // Wrap in code blocks for copilot cells, use raw output for other cells
+        const replacement = wrapInCodeBlocks ? `\`\`\`\n${output}\n\`\`\`` : output;
         processedCode = processedCode.replace(placeholder, replacement);
       } else {
         errors.push(`Variable '${variableName}' not found. Please run the cell with @options {"id": "${variableName}"} first.`);

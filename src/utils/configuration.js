@@ -132,7 +132,7 @@ class Configuration {
    */
   getSupportedLanguages() {
     const defaultLanguages = [
-      'javascript', 'js', 'bash', 'python', 'shell', 'copilot'
+      'bash', 'javascript', 'js', 'python', 'shell', 'copilot'
     ];
 
     return this.getConfig().get('languages.supported', defaultLanguages);
