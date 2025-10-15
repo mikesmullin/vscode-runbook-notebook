@@ -48,22 +48,6 @@ function getDefaultExtension() {
 }
 
 /**
- * Get maximum turns for Copilot agent mode
- * Configurable via: runbook-notebook.copilot.maxAgentTurns
- */
-function getMaxAgentTurns() {
-  return configuration.getMaxAgentTurns();
-}
-
-/**
- * Get default AI model for Copilot queries
- * Configurable via: runbook-notebook.copilot.defaultModel
- */
-function getDefaultModel() {
-  return configuration.getDefaultModel();
-}
-
-/**
  * Get supported languages for the notebook controller
  * Configurable via: runbook-notebook.languages.supported
  */
@@ -77,7 +61,6 @@ const FILE_EXTENSIONS = getFileExtensions();
 const SHEBANGS = getShebangs();
 const DEFAULT_SHEBANG = getDefaultShebang();
 const DEFAULT_EXTENSION = getDefaultExtension();
-const MAX_AGENT_TURNS = getMaxAgentTurns();
 const SUPPORTED_LANGUAGES = getSupportedLanguages();
 
 module.exports = {
@@ -87,8 +70,6 @@ module.exports = {
   getShebangs,
   getDefaultShebang,
   getDefaultExtension,
-  getMaxAgentTurns,
-  getDefaultModel,
   getSupportedLanguages,
 
   // Legacy constants (deprecated - use functions above)
@@ -97,7 +78,6 @@ module.exports = {
   SHEBANGS,
   DEFAULT_SHEBANG,
   DEFAULT_EXTENSION,
-  MAX_AGENT_TURNS,
   SUPPORTED_LANGUAGES,
 
   // Configuration instance for advanced usage

@@ -1,7 +1,7 @@
 {
   "name": "runbook-notebook",
   "displayName": "Runbook Notebook",
-  "description": "A notebook extension for automating Runbooks with terminal execution and Copilot integration",
+  "description": "A notebook extension for automating Runbooks with terminal execution",
   "version": "1.0.7",
   "publisher": "lunarcavyhvyind",
   "repository": {
@@ -32,11 +32,6 @@
         "icon": "$(notebook)"
       },
       {
-        "command": "runbookNotebook.insertCopilotCell",
-        "title": "Copilot",
-        "icon": "$(copilot)"
-      },
-      {
         "command": "runbookNotebook.insertCodeCell",
         "title": "Code",
         "icon": "$(code)"
@@ -59,13 +54,7 @@
           "group": "navigation@1"
         }
       ],
-      "notebook/toolbar": [
-        {
-          "command": "runbookNotebook.insertCopilotCell",
-          "when": "notebookType == runbookNotebook",
-          "group": "navigation@1"
-        }
-      ]
+      "notebook/toolbar": []
     },
     "notebooks": [
       {
@@ -81,18 +70,6 @@
     "configuration": {
       "title": "Runbook Notebook",
       "properties": {
-        "runbook-notebook.copilot.maxAgentTurns": {
-          "type": "number",
-          "default": 3,
-          "minimum": 1,
-          "maximum": 50,
-          "description": "Maximum number of turns allowed in Copilot agent mode conversations. Higher values allow for more complex multi-step interactions but may increase response time."
-        },
-        "runbook-notebook.copilot.defaultModel": {
-          "type": "string",
-          "default": "claude-sonnet-4",
-          "description": "Default AI model to use for Copilot queries. This can be overridden per cell using @options {\"model\": \"model-name\"}. Available models depend on your GitHub Copilot subscription."
-        },
         "runbook-notebook.languages.commentStyles": {
           "type": "object",
           "default": {},
@@ -134,8 +111,7 @@
             "javascript",
             "js",
             "python",
-            "shell",
-            "copilot"
+            "shell"
           ],
           "description": "List of supported languages for the notebook controller.",
           "items": {
@@ -157,12 +133,12 @@
         "runbook-notebook.output.autoPromptScrollableOutput": {
           "type": "boolean",
           "default": true,
-          "description": "Automatically prompt user to enable scrollable notebook output for better Copilot streaming experience."
+          "description": "Automatically prompt user to enable scrollable notebook output for better output viewing experience."
         },
         "runbook-notebook.debug.enabled": {
           "type": "boolean",
           "default": false,
-          "description": "Enable debug logging to the Runbook Copilot output channel."
+          "description": "Enable debug logging to the Runbook output channel."
         }
       }
     }
@@ -178,8 +154,5 @@
     "test:options": "node tests/optionsParser-simple.test.js",
     "test:variables": "node tests/variableProcessor-simple.test.js"
   },
-  "devDependencies": {},
-  "extensionDependencies": [
-    "GitHub.copilot"
-  ]
+  "devDependencies": {}
 }

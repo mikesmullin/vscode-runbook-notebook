@@ -2,17 +2,15 @@
  * Runbook Notebook Extension
  * 
  * This extension creates a notebook-like interface for .md files for Runbooks.
- * It supports three types of cells:
+ * It supports two types of cells:
  * - Markdown: rendered markdown
- * - Code (normal): executed via terminal, output shown below
- * - Code (copilot): prompts sent to GitHub Copilot, response shown below
+ * - Code: executed via terminal, output shown below
  */
 
 const vscode = require('vscode');
 const { NotebookSerializer } = require('./core/notebookSerializer');
 const { CellExecutor } = require('./core/cellExecutor');
 const { CommandHandler } = require('./core/commandHandler');
-const { CopilotService } = require('./services/copilotService');
 const { getSupportedLanguages, configuration } = require('./constants');
 
 /**
@@ -20,7 +18,6 @@ const { getSupportedLanguages, configuration } = require('./constants');
  */
 class RunbookExtension {
   constructor() {
-    this.copilotService = null;
     this.cellExecutor = null;
     this.commandHandler = null;
     this.controller = null;
@@ -32,8 +29,7 @@ class RunbookExtension {
    */
   activate(context) {
     // Initialize services
-    this.copilotService = new CopilotService();
-    this.cellExecutor = new CellExecutor(this.copilotService);
+    this.cellExecutor = new CellExecutor();
     this.commandHandler = new CommandHandler();
 
     // Register the notebook serializer
@@ -48,9 +44,6 @@ class RunbookExtension {
 
     // Register commands
     this.commandHandler.registerCommands(context);
-
-    // Add services to subscriptions for cleanup
-    context.subscriptions.push(this.copilotService);
 
     // Watch for configuration changes
     this.setupConfigurationWatcher(context);
@@ -105,13 +98,6 @@ class RunbookExtension {
         if (this.controller) {
           this.controller.supportedLanguages = getSupportedLanguages();
           console.log('Updated supported languages:', getSupportedLanguages());
-        }
-      }
-
-      // Log model configuration changes
-      if (event.affectsConfiguration('runbook-notebook.copilot.defaultModel')) {
-        if (configuration.getDebugLogging()) {
-          console.log('Default AI model changed to:', configuration.getDefaultModel());
         }
       }
 

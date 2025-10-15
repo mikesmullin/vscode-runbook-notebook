@@ -27,28 +27,11 @@ class Configuration {
   }
 
   /**
-   * Get the maximum number of turns for Copilot agent mode
-   * @returns {number}
-   */
-  getMaxAgentTurns() {
-    return this.getConfig().get('copilot.maxAgentTurns', 3);
-  }
-
-  /**
-   * Get the default AI model for Copilot queries
-   * @returns {string}
-   */
-  getDefaultModel() {
-    return this.getConfig().get('copilot.defaultModel', 'claude-sonnet-4');
-  }
-
-  /**
    * Get comment styles for different languages
    * @returns {Object}
    */
   getCommentStyles() {
     const defaultStyles = {
-      'copilot': '//',
       'bash': '#',
       'sh': '#',
       'shell': '#',
@@ -132,7 +115,7 @@ class Configuration {
    */
   getSupportedLanguages() {
     const defaultLanguages = [
-      'bash', 'javascript', 'js', 'python', 'shell', 'copilot'
+      'bash', 'javascript', 'js', 'python', 'shell'
     ];
 
     return this.getConfig().get('languages.supported', defaultLanguages);

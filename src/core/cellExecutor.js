@@ -18,8 +18,7 @@ const { containsMarkdownPatterns } = require('../utils/markdownDetector');
  * Service class for executing notebook cells
  */
 class CellExecutor {
-  constructor(copilotService) {
-    this.copilotService = copilotService;
+  constructor() {
     this.codeExecutor = new CodeExecutor();
   }
 
@@ -35,63 +34,15 @@ class CellExecutor {
 
     try {
       const languageId = cell.document?.languageId || cell.languageId || 'unknown';
+      const isCodeCell = cell.cellKind === vscode.NotebookCellKind.Code ||
+        (cell.document && cell.document.languageId);
 
-      if (languageId === 'copilot') {
-        await this.executeCopilotCell(cell, execution, notebook);
-      } else {
+      if (isCodeCell) {
         await this.executeCodeCell(cell, execution, notebook);
       }
     } catch (error) {
       this.handleExecutionError(error, execution);
     }
-  }
-
-  /**
-   * Execute a Copilot cell
-   * @param {vscode.NotebookCell} cell - The cell to execute
-   * @param {vscode.NotebookCellExecution} execution - The execution context
-   * @param {vscode.NotebookDocument} notebook - The notebook document
-   */
-  async executeCopilotCell(cell, execution, notebook) {
-    // Check if execution was cancelled
-    if (execution.token.isCancellationRequested) {
-      execution.end(false, Date.now());
-      return;
-    }
-
-    const code = cell.document.getText();
-    const languageId = cell.document.languageId;
-    const { options, cleanedCode } = parseOptionsFromCode(code, languageId);
-
-    // Process variable substitution with code block wrapping for copilot
-    const { processedCode, errors } = processVariableSubstitution(cleanedCode, notebook, true);
-
-    // If there are variable substitution errors, show them and stop execution
-    if (errors.length > 0) {
-      const errorMessage = errors.join('\n');
-      execution.replaceOutput([new vscode.NotebookCellOutput([
-        vscode.NotebookCellOutputItem.error({
-          name: 'VariableSubstitutionError',
-          message: errorMessage,
-          stack: errorMessage
-        })
-      ])]);
-      execution.end(false, Date.now());
-      return;
-    }
-
-    const prompt = processedCode;
-
-    this.copilotService.outputChannel.appendLine(`Parsed options: ${JSON.stringify(options)}`);
-    this.copilotService.outputChannel.appendLine(`Options mode: ${options.mode}`);
-
-    // Check and prompt for scrollable output on first Copilot execution
-    await this.copilotService.checkAndPromptForScrollableOutput();
-
-    const response = await this.copilotService.askCopilot(prompt, execution.token, options, execution);
-
-    // Final output update is handled by askCopilot through streaming, but ensure we end execution
-    execution.end(true, Date.now());
   }
 
   /**
@@ -111,8 +62,8 @@ class CellExecutor {
     const languageId = cell.document?.languageId || cell.languageId || 'unknown';
     const { options, cleanedCode } = parseOptionsFromCode(code, languageId);
 
-    // Process variable substitution without code block wrapping for code cells
-    const { processedCode, errors } = processVariableSubstitution(cleanedCode, notebook, false);
+    // Process variable substitution
+    const { processedCode, errors } = processVariableSubstitution(cleanedCode, notebook);
 
     // If there are variable substitution errors, show them and stop execution
     if (errors.length > 0) {
@@ -148,7 +99,7 @@ class CellExecutor {
   handleCodeExecutionSuccess(result, execution, options) {
     const output = result.stdout + (result.stderr ? '\nSTDERR:\n' + result.stderr : '');
 
-    // Check if output contains markdown patterns (same logic as Copilot cells)
+    // Check if output contains markdown patterns
     const hasMarkdown = containsMarkdownPatterns(output);
 
     // Use markdown MIME type if output contains markdown patterns, otherwise plain text

@@ -61,10 +61,9 @@ function readFileContent(filePath, notebook) {
  * For {{*.md}} patterns, reads file content from workspace relative path
  * @param {string} code - The code content
  * @param {vscode.NotebookDocument} notebook - The notebook document to search for cell IDs
- * @param {boolean} wrapInCodeBlocks - Whether to wrap variable outputs in code blocks (for copilot cells)
  * @returns {Object} - Object containing processed code and any errors
  */
-function processVariableSubstitution(code, notebook, wrapInCodeBlocks = true) {
+function processVariableSubstitution(code, notebook) {
   const variablePattern = /\{\{([^}]+)\}\}/g;
   const errors = [];
   let processedCode = code;
@@ -86,9 +85,8 @@ function processVariableSubstitution(code, notebook, wrapInCodeBlocks = true) {
       // Look for output in stored cell outputs
       if (cellOutputs.has(variableName)) {
         const output = cellOutputs.get(variableName);
-        // Wrap in code blocks for copilot cells, use raw output for other cells
-        const replacement = wrapInCodeBlocks ? `\`\`\`\n${output}\n\`\`\`` : output;
-        processedCode = processedCode.replace(placeholder, replacement);
+        // Use raw output for code cells
+        processedCode = processedCode.replace(placeholder, output);
       } else {
         errors.push(`Variable '${variableName}' not found. Please run the cell with @options {"id": "${variableName}"} first.`);
       }

@@ -2,8 +2,7 @@
 
 Provides a Jupyter-like notebook for Runbooks, 
 allowing automation of Troubleshooting Guides (TSGs) with:
-- 🤖 GitHub Copilot integration
-- 🧑🏻‍💻 various scripting languages (Bash, Node.js, Python, etc.)
+- 🏻‍💻 various scripting languages (Bash, Node.js, Python, etc.)
 - 💲 shell execution
 
 ## Demo
@@ -13,7 +12,7 @@ allowing automation of Troubleshooting Guides (TSGs) with:
 ## Features
 
 - **Markdown Cells**: Rendered markdown content for documentation
-- **Code Cells (Normal)**: Execute arbitrary code in the terminal
+- **Code Cells**: Execute arbitrary code in the terminal
   - Supports JavaScript (Node.js), Python, Bash, and other languages
   - Code is written to a temporary executable file with appropriate interpreters
   - File is executed and stdout/stderr are captured
@@ -27,9 +26,6 @@ allowing automation of Troubleshooting Guides (TSGs) with:
     - Tables (`| col | col |`)
   - **Error handling**: Non-zero exit codes display as error outputs with proper styling
   - **Cancellation support**: Long-running executions can be cancelled (works for all supported languages including Bash, Python, and JavaScript)
-- **Copilot Cells**: Send prompts to GitHub Copilot and display responses
-  - Copilot response appears in the cell's output area
-  - **Cancellation support**: AI requests can be cancelled
   - **Variable Substitution**: Reference outputs from previous cells using `{{variable}}` syntax
   - **File Inclusion**: Include file content using `{{path/to/file.md}}` syntax (reads from workspace root)
 
@@ -40,9 +36,7 @@ allowing automation of Troubleshooting Guides (TSGs) with:
    - ````javascript` for JavaScript code (executed in terminal)
    - ````bash` for shell scripts
    - ````python` for Python code
-   - ````copilot` for Copilot prompts
 3. (optional) Configure cell behavior using `@options` on the first line with language-appropriate comment syntax:
-   - **Copilot cells**: `// @options {"mode": "agent"}` - Enable agent mode with tool access
    - **All code cells**: `# @options {"timeout": 30}` - Set execution timeout in seconds (kills process after timeout)
    - **Variable storage**: `# @options {"id": "variable_name"}` - Store cell output for use in other cells
    - **JavaScript**: `// @options {"node_args": ["--inspect"]}` - Pass Node.js arguments (planned)
@@ -51,12 +45,11 @@ allowing automation of Troubleshooting Guides (TSGs) with:
 4. Open the file with the Runbook Notebook view
 5. Execute cells using the play buttons
 
-### Variable Substitution in Copilot Cells
+### Variable Substitution
 
 Two types of variable substitution are supported:
 
 - **Cell Output Variables**: `{{variable_name}}` - References output from cells with `@options {"id": "variable_name"}`
-  - Output is wrapped in code blocks: `````markdown\n{output}\n`````
 - **File Inclusion**: `{{path/to/file.md}}` - Includes content from files relative to workspace root
   - Content is included as-is without code block wrapping
   - Useful for including documentation, templates, or reference data
@@ -65,7 +58,6 @@ Two types of variable substitution are supported:
 
 - [Graph Runbook](example-runbooks/graph-runbook.md)
 - [Sample Runbook](example-runbooks/sample-runbook.md)
-- [Copilot Runbook](example-runbooks/copilot-runbook.md)
 - [Database Runbook](example-runbooks/database-runbook.md)
 - [System Analysis Runbook](example-runbooks/system-analysis-runbook.md)
 
@@ -79,7 +71,6 @@ Two types of variable substitution are supported:
 ## Requirements
 
 - VS Code 1.104.2+
-- GitHub Copilot extension installed, and active subscription
 
 ## Limitations
 

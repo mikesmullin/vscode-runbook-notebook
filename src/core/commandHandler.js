@@ -15,7 +15,6 @@ class CommandHandler {
   setupCommands() {
     this.commands.set('runbookNotebook.openAsTextEditor', this.openAsTextEditor.bind(this));
     this.commands.set('runbookNotebook.openAsNotebook', this.openAsNotebook.bind(this));
-    this.commands.set('runbookNotebook.insertCopilotCell', this.insertCopilotCell.bind(this));
     this.commands.set('runbookNotebook.insertCodeCell', this.insertCodeCell.bind(this));
   }
 
@@ -47,20 +46,6 @@ class CommandHandler {
     const activeTab = vscode.window.tabGroups.activeTabGroup.activeTab;
     if (activeTab && activeTab.input && activeTab.input.uri) {
       await vscode.commands.executeCommand('vscode.openWith', activeTab.input.uri, 'runbookNotebook', { preview: false });
-    }
-  }
-
-  /**
-   * Insert a new Copilot cell at the current position
-   */
-  async insertCopilotCell() {
-    const editor = vscode.window.activeNotebookEditor;
-    if (editor) {
-      const index = editor.selection.end;
-      const cellData = new vscode.NotebookCellData(vscode.NotebookCellKind.Code, '', 'copilot');
-      const edit = new vscode.WorkspaceEdit();
-      edit.set(editor.notebook.uri, [new vscode.NotebookEdit(new vscode.NotebookRange(index, index), [cellData])]);
-      await vscode.workspace.applyEdit(edit);
     }
   }
 
