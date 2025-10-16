@@ -62,8 +62,11 @@ class CellExecutor {
     const languageId = cell.document?.languageId || cell.languageId || 'unknown';
     const { options, cleanedCode } = parseOptionsFromCode(code, languageId);
 
-    // Process variable substitution
-    const { processedCode, errors } = processVariableSubstitution(cleanedCode, notebook);
+    // Get the current cell index for variable substitution
+    const currentCellIndex = cell.index;
+
+    // Process variable substitution (with cell index to know which cells to check for variables)
+    const { processedCode, errors } = processVariableSubstitution(cleanedCode, notebook, currentCellIndex);
 
     // If there are variable substitution errors, show them and stop execution
     if (errors.length > 0) {

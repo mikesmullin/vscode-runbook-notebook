@@ -47,12 +47,31 @@ allowing automation of Troubleshooting Guides (TSGs) with:
 
 ### Variable Substitution
 
-Two types of variable substitution are supported:
+Three types of variable substitution are supported:
 
+- **Markdown Table Variables**: Define variables in a table under any `## VARIABLES` heading
+  ```markdown
+  ## Variables
+  
+  name | value | notes
+  -|-|-
+  API_KEY | abc123 | Production API key
+  BASE_URL | https://api.example.com | API endpoint
+  ```
+  - Case-insensitive variable names and lookups
+  - Multiple VARIABLES sections are merged (last definition before the cell wins)
+  - Only variables from cells above the current cell are available
+  - Extra columns (like `notes`) are ignored
+  
 - **Cell Output Variables**: `{{variable_name}}` - References output from cells with `@options {"id": "variable_name"}`
+  - Dynamic values from executed cells
+  - Takes priority over table variables
+  
 - **File Inclusion**: `{{path/to/file.md}}` - Includes content from files relative to workspace root
   - Content is included as-is without code block wrapping
   - Useful for including documentation, templates, or reference data
+
+**Priority Order**: Cell outputs > Table variables > File inclusion
 
 ## Example Runbooks
 
